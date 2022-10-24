@@ -1,11 +1,13 @@
 from unittest import TestCase
 
 from app import app
-from models import db, Cupcake
+from models import db, Cupcake, connect_db
 
 # Use test database and don't clutter tests with SQL
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///cupcakes_test'
 app.config['SQLALCHEMY_ECHO'] = False
+
+connect_db(app)
 
 # Make Flask errors be real errors, rather than HTML pages with error info
 app.config['TESTING'] = True
@@ -110,6 +112,7 @@ class CupcakeViewsTestCase(TestCase):
             self.assertEqual(Cupcake.query.count(), 2)
 
     def test_update_cupcake(self):
+        """ Tests response code and if cupcake data is updated """
         with app.test_client() as client:
             url = f"/api/cupcakes/{self.cupcake.id}"
             resp = client.patch(url, json={
@@ -118,14 +121,10 @@ class CupcakeViewsTestCase(TestCase):
                             })
             self.assertEqual(resp.status_code, 200)
 
-            data = resp.json.copy()
-
-            # don't know what ID we'll get, make sure it's an int & normalize
-            self.assertIsInstance(data['cupcake']['id'], int)
-            del data['cupcake']['id']
-
-            self.assertEqual(data, {
+            print("!!!!!!!!!!!!!!!!!!!!!!!!!", resp.json)
+            self.assertEqual(resp.json, {
                 "cupcake": {
+                    "id": self.cupcake.id,
                     "flavor": "BadTestFlavor",
                     "size": "TestSize",
                     "rating": 1,
@@ -134,6 +133,7 @@ class CupcakeViewsTestCase(TestCase):
             })
 
     def test_delete_cupcake(self):
+        """ Tests response code and if cupcake is deleted. """
         with app.test_client() as client:
             url = f"/api/cupcakes/{self.cupcake.id}"
             resp = client.delete(url)
@@ -143,5 +143,5 @@ class CupcakeViewsTestCase(TestCase):
             cupcake = Cupcake.query.get(self.cupcake.id)
 
             self.assertIsNone(cupcake)
-
+            self.assertEqual(resp.json, {'deleted': self.cupcake.id})
 
