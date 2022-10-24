@@ -14,30 +14,35 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 connect_db(app)
 db.create_all()
 
-@app.route('/api/cupcakes', methods=["GET"])
+@app.get('/api/cupcakes')
 def cupcake_all():
-  """Get all cupcakes."""
+  """Get all cupcakes. Responds with JSON:
+  {cupcakes: [{id, flavor, size, rating, image}, ...]}"""
 
   cupcakes = [cupcake.serialize() for cupcake in Cupcake.query.all()]
 
   return jsonify(cupcakes=cupcakes)
 
-@app.route('/api/cupcakes/<int:cupcake_id>', methods=["GET"])
+@app.get('/api/cupcakes/<int:cupcake_id>')
 def cupcake_get(cupcake_id):
-  """Get a cupcake."""
+  """Get a cupcake. Responds with JSON:
+  {cupcake: {id, flavor, size, rating, image}}"""
 
   cupcake = Cupcake.query.get_or_404(cupcake_id).serialize()
 
   return jsonify(cupcake=cupcake)
 
-@app.route('/api/cupcakes', methods=["POST"])
+@app.post('/api/cupcakes')
 def cupcake_post():
-  """Add a cupcake."""
+  """Add a cupcake.
+  Inputs: {"flavor": flavor, "size": size, "rating": rating, "image": image}
+  Responds with JSON: {cupcake: {id, flavor, size, rating, image}}
+  """
 
   flavor = request.json['flavor']
   size = request.json['size']
   rating = request.json['rating']
-  image = request.json['image']
+  image = request.json.get('image') or None
 
   cupcake = Cupcake(flavor=flavor, size=size, rating=rating, image=image)
 
@@ -49,14 +54,15 @@ def cupcake_post():
 
 @app.patch('/api/cupcakes/<int:cupcake_id>')
 def cupcake_update(cupcake_id):
-  """Update cupcake info"""
+  """Update cupcake info. Responds with JSON:
+  {cupcake: {id, flavor, size, rating, image}}"""
 
   cupcake = Cupcake.query.get_or_404(cupcake_id)
 
-  cupcake.flavor = request.json['flavor'] if request.json['flavor'] else cupcake.flavor
-  cupcake.size = request.json['size'] if request.json['size'] else cupcake.size
-  cupcake.rating = request.json['rating'] if request.json['rating'] else cupcake.rating
-  cupcake.image = request.json['image'] if request.json['image'] else cupcake.image
+  cupcake.flavor = request.json.get('flavor', cupcake.flavor)
+  cupcake.size = request.json.get('size', cupcake.size)
+  cupcake.rating = request.json.get('rating', cupcake.rating)
+  cupcake.image = request.json.get('image', cupcake.image)
 
   db.session.commit()
 
@@ -65,7 +71,7 @@ def cupcake_update(cupcake_id):
 
 @app.delete('/api/cupcakes/<int:cupcake_id>')
 def cupcake_delete(cupcake_id):
-  """Delete cupcake."""
+  """Delete cupcake. Responds with JSON: {deleted: [cupcake-id]}."""
 
   cupcake = Cupcake.query.get_or_404(cupcake_id)
 

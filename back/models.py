@@ -22,7 +22,8 @@ class Cupcake(db.Model):
   flavor = db.Column(
     db.String(50),
     nullable=False,
-    unique=True
+    # unique=True
+    #TODO: size/flavor constraint?
   )
 
   rating = db.Column(
