@@ -121,7 +121,6 @@ class CupcakeViewsTestCase(TestCase):
                             })
             self.assertEqual(resp.status_code, 200)
 
-            print("!!!!!!!!!!!!!!!!!!!!!!!!!", resp.json)
             self.assertEqual(resp.json, {
                 "cupcake": {
                     "id": self.cupcake.id,

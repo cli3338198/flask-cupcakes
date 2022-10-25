@@ -1,6 +1,5 @@
 from urllib import response
 from flask import Flask, url_for, render_template, redirect, flash, jsonify, request
-import requests
 
 # from flask_debugtoolbar import DebugToolbarExtension
 
@@ -61,9 +60,9 @@ def cupcake_update(cupcake_id):
 
   cupcake = Cupcake.query.get_or_404(cupcake_id)
 
-  cupcake.flavor = request.json.get('flavor', cupcake.flavor)
-  cupcake.size = request.json.get('size', cupcake.size)
-  cupcake.rating = request.json.get('rating', cupcake.rating)
+  cupcake.flavor = request.json.get('flavor') or cupcake.flavor
+  cupcake.size = request.json.get('size') or cupcake.size
+  cupcake.rating = request.json.get('rating') or cupcake.rating
   cupcake.image = request.json.get('image') or cupcake.image
 
   db.session.commit()
@@ -87,7 +86,4 @@ def cupcake_delete(cupcake_id):
 def show_homepage():
   """Displays homepage"""
 
-  cupcakes = requests.get('/api/cupcakes')
-
-
-  return render_template('base.html')
+  return render_template('index.html')
